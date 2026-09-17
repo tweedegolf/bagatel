@@ -35,7 +35,7 @@ cli = []
 webservice = ["dep:tokio", "dep:serde_json", "dep:serde", "dep:percent-encoding"]
 
 [dependencies]
-zstd = { version = "0.13", optional = true }
+zstd = { version = "0.14", optional = true }
 percent-encoding = { version = "2", optional = true }
 quick-xml = { version = "0.42", optional = true }
 rayon = { version = "1", optional = true }
