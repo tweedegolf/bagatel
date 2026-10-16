@@ -48,7 +48,7 @@ impl ParsedData {
 
         for index in 0..zip.len() {
             let mut entry = zip.by_index(index)?;
-            let name = entry.name().to_string();
+            let name = entry.name()?.into_owned();
 
             if entry.is_dir() || !name.ends_with(".zip") {
                 continue;
@@ -113,10 +113,10 @@ impl ParsedData {
         T: Send,
         F: Fn(&mut dyn std::io::BufRead) -> Result<Vec<T>, quick_xml::Error> + Sync,
     {
-        let name = entry.name().to_string();
         let mut buf = Vec::new();
         entry.read_to_end(&mut buf)?;
 
+        let name = entry.name()?;
         log_with_elapsed(start, &format!("Read {} bytes from {name}", buf.len()));
 
         // Inner ZIP entries are parsed in parallel. Each worker opens its own
@@ -130,8 +130,8 @@ impl ParsedData {
             .map(|i| -> Result<Vec<T>, Box<dyn Error + Send + Sync>> {
                 let mut inner_zip = ZipArchive::new(Cursor::new(&buf[..]))?;
                 let inner_entry = inner_zip.by_index(i)?;
-                let entry_name = inner_entry.name();
-                let base_name = entry_name.rsplit('/').next().unwrap_or(entry_name);
+                let entry_name = inner_entry.name()?;
+                let base_name = entry_name.rsplit('/').next().unwrap_or(&entry_name);
                 // Skip non-XML entries and metadata junk such as macOS
                 // AppleDouble files (`__MACOSX/._foo.xml`), which are binary.
                 if !entry_name.ends_with(".xml") || base_name.starts_with('.') {
@@ -163,11 +163,11 @@ impl ParsedData {
 fn extract_date_from_zip(zip: &mut ZipArchive<File>) -> Option<String> {
     for index in 0..zip.len() {
         let entry = zip.by_index(index).ok()?;
-        let name = entry.name();
+        let name = entry.name().ok()?;
         let stem = name
             .rsplit('/')
             .next()
-            .unwrap_or(name)
+            .unwrap_or(&name)
             .trim_end_matches(".zip")
             .trim_end_matches(".xml");
         let trailing_digits: String = stem

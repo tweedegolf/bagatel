@@ -123,13 +123,10 @@ fn decode_utf16_le(bytes: &[u8]) -> Result<String, Box<dyn Error>> {
         [0xFF, 0xFE, rest @ ..] => rest,
         _ => bytes,
     };
-    if !body.len().is_multiple_of(2) {
+    let (chunks, []) = body.as_chunks::<2>() else {
         return Err("RVIG CSV: odd byte count in UTF-16 LE payload".into());
-    }
-    let units: Vec<u16> = body
-        .chunks_exact(2)
-        .map(|c| u16::from_le_bytes([c[0], c[1]]))
-        .collect();
+    };
+    let units: Vec<u16> = chunks.iter().map(|c| u16::from_le_bytes(*c)).collect();
     Ok(String::from_utf16_lossy(&units))
 }
 

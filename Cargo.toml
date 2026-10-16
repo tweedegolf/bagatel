@@ -42,4 +42,4 @@ rayon = { version = "1", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "io-util", "signal", "time"], optional = true }
-zip = { version = "8", optional = true }
+zip = { version = "9", optional = true }
