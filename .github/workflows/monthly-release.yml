@@ -20,7 +20,9 @@ jobs:
 
       - name: Setup Rust
         shell: bash
-        run: rustup update stable && rustup default stable
+        run: |
+          rustup update stable && rustup default stable
+          rustup toolchain install nightly --profile minimal
 
       - name: Cache cargo
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -56,7 +58,9 @@ jobs:
           echo "version=${new_version}" >> "$GITHUB_OUTPUT"
 
       - name: Update Cargo.lock
-        run: cargo update
+        env:
+          CARGO_REGISTRY_GLOBAL_MIN_PUBLISH_AGE: "7 days"
+        run: cargo +nightly -Zmin-publish-age update
 
       - name: Test
         run: cargo test --all-features
